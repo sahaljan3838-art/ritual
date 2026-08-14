@@ -6,6 +6,7 @@ create table habits (
   id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users on delete cascade,
   name text not null, kind habit_kind not null, why text, cue text, routine text, minimum_version text,
   replacement text, friction_plan text, difficulty difficulty default 'tiny', target_minutes int,
+  reminder_time time, reminder_enabled boolean default false,
   color text default '#6674E8', archived boolean default false, created_at timestamptz default now()
 );
 create table habit_events (id uuid primary key default gen_random_uuid(), habit_id uuid not null references habits on delete cascade, user_id uuid not null references auth.users on delete cascade, occurred_on date not null, status text check(status in ('complete','partial','skipped')), note text, created_at timestamptz default now(), unique(habit_id, occurred_on));
@@ -17,3 +18,7 @@ create policy "own habits" on habits using (auth.uid()=user_id) with check(auth.
 create policy "own events" on habit_events using (auth.uid()=user_id) with check(auth.uid()=user_id);
 create policy "own recovery" on recovery_checkins using (auth.uid()=user_id) with check(auth.uid()=user_id);
 create policy "own conversations" on coach_conversations using (auth.uid()=user_id) with check(auth.uid()=user_id);
+
+-- Run these two lines once in an existing project created before reminders.
+alter table habits add column if not exists reminder_time time;
+alter table habits add column if not exists reminder_enabled boolean default false;
