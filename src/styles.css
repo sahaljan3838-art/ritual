@@ -31,7 +31,7 @@ h1,h2{font-family:'Playfair Display',serif;color:#1d3130}h1{font-size:32px}.eyeb
 /* Phone-first guardrails: no horizontal scroll, no desktop-sized controls. */
 html{max-width:100%;-webkit-text-size-adjust:100%}body,#root,.app{width:100%;max-width:100%;overflow-x:hidden}.app{min-height:100dvh}.content,.content>section,.content>aside{min-width:0}.hero>div:first-child,.detail-hero>div{min-width:0}
 @media(max-width:670px){
-  body{padding-bottom:76px}.content{width:100%;max-width:none;overflow-x:clip;padding:20px 14px 28px}
+  body{padding-bottom:76px}main{margin-left:0;width:100%;min-width:0}.sidebar{display:none}.content{width:100%;max-width:none;overflow-x:clip;padding:20px 14px 28px}
   header{height:70px;gap:8px;padding:10px 14px}header>div:nth-child(2){flex:1;min-width:0}.head-actions{flex:none;gap:0}.avatar{width:36px;height:36px}.mobile-menu{width:40px;height:40px;margin-left:0;padding:0;border-radius:12px;background:#edf5f0}
   header .eyebrow{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}header h1{max-width:none;font-size:20px;line-height:1.05}.mobile-nav{top:76px;left:8px;right:8px;max-height:calc(100dvh - 152px);overflow:auto}
   .grid-home{display:block}.home-aside{display:grid;gap:12px;margin-top:12px}.home-aside .insight{display:block}.home-aside .score,.home-aside .recovery-card{display:none}
