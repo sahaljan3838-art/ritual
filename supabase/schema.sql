@@ -6,7 +6,7 @@ create table habits (
   id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users on delete cascade,
   name text not null, kind habit_kind not null, why text, cue text, routine text, minimum_version text,
   replacement text, friction_plan text, difficulty difficulty default 'tiny', target_minutes int,
-  reminder_time time, reminder_enabled boolean default false,
+  reminder_time time, reminder_enabled boolean default false, schedule_days integer[] not null default array[0,1,2,3,4,5,6],
   color text default '#6674E8', archived boolean default false, created_at timestamptz default now()
 );
 create table habit_events (id uuid primary key default gen_random_uuid(), habit_id uuid not null references habits on delete cascade, user_id uuid not null references auth.users on delete cascade, occurred_on date not null, status text check(status in ('complete','partial','skipped')), note text, created_at timestamptz default now(), unique(habit_id, occurred_on));
@@ -22,6 +22,7 @@ create policy "own conversations" on coach_conversations using (auth.uid()=user_
 -- Run these two lines once in an existing project created before reminders.
 alter table habits add column if not exists reminder_time time;
 alter table habits add column if not exists reminder_enabled boolean default false;
+alter table habits add column if not exists schedule_days integer[] not null default array[0,1,2,3,4,5,6];
 
 -- Background push subscriptions. The browser stores only its own subscription;
 -- the scheduled server function reads them with the Supabase service-role key.

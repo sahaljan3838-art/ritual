@@ -8,7 +8,7 @@ const localClock = (timeZone: string) => {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
   }).formatToParts(new Date()).reduce<Record<string, string>>((result, part) => ({ ...result, [part.type]: part.value }), {})
-  return { day: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` }
+  return { day: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}`, weekday: new Date(`${parts.year}-${parts.month}-${parts.day}T12:00:00Z`).getUTCDay() }
 }
 
 export default async function handler(request: any, response: any) {
@@ -21,14 +21,14 @@ export default async function handler(request: any, response: any) {
   const admin = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
   const [{ data: subscriptions, error: subscriptionsError }, { data: habits, error: habitsError }] = await Promise.all([
     admin.from('push_subscriptions').select('user_id, endpoint, subscription, timezone'),
-    admin.from('habits').select('id, user_id, name, minimum_version, reminder_time').eq('archived', false).eq('reminder_enabled', true).not('reminder_time', 'is', null)
+    admin.from('habits').select('id, user_id, name, minimum_version, reminder_time, schedule_days').eq('archived', false).eq('reminder_enabled', true).not('reminder_time', 'is', null)
   ])
   if (subscriptionsError || habitsError) return response.status(500).json({ error: subscriptionsError?.message || habitsError?.message })
 
   let sent = 0
   for (const device of subscriptions || []) {
     const clock = localClock(device.timezone || 'UTC')
-    for (const habit of (habits || []).filter((item: any) => item.user_id === device.user_id && item.reminder_time.slice(0, 5) === clock.time)) {
+    for (const habit of (habits || []).filter((item: any) => item.user_id === device.user_id && item.reminder_time.slice(0, 5) === clock.time && (item.schedule_days || [0,1,2,3,4,5,6]).includes(clock.weekday))) {
       const { data: completed } = await admin.from('habit_events').select('id').eq('habit_id', habit.id).eq('occurred_on', clock.day).eq('status', 'complete').maybeSingle()
       if (completed) continue
       const { error: logError } = await admin.from('push_reminder_log').insert({ habit_id: habit.id, user_id: habit.user_id, endpoint: device.endpoint, scheduled_on: clock.day })
